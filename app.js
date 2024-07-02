@@ -30,15 +30,15 @@ app.use(
   })
 );
 
-// create a write stream (in append mode)
-const accessLogStream = fs.createWriteStream(
-  path.join(__dirname, "logs/access.log"),
-  {
-    flags: "a",
-  }
-);
-// setup the logger
-app.use(morgan("combined", { stream: accessLogStream }));
+// // create a write stream (in append mode)
+// const accessLogStream = fs.createWriteStream(
+//   path.join(__dirname, "logs/access.log"),
+//   {
+//     flags: "a",
+//   }
+// );
+// // setup the logger
+// app.use(morgan("combined", { stream: accessLogStream }));
 
 app.use(setHeaders);
 

@@ -27,6 +27,8 @@ module.exports = (sequelize, DataTypes) => {
     verificationCode:DataTypes.STRING,
     verificationCodeExpireTime:DataTypes.DATE,
     password: DataTypes.STRING,
+    otpCode: DataTypes.STRING, // add otp column here
+    otpExpireTime: DataTypes.DATE // add otpExpireTime column here
 
   }, {
     sequelize,

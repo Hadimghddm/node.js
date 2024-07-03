@@ -8,7 +8,7 @@ const cors = require("cors");
 const config = require("./config/app");
 const routes = require("./routes");
 const limiter = require('express-rate-limit')
-const { setHeaders } = require("./middlewares/headers");
+//const { setHeaders } = require("./middlewares/headers");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
@@ -40,7 +40,7 @@ app.use(
 // // setup the logger
 // app.use(morgan("combined", { stream: accessLogStream }));
 
-app.use(setHeaders);
+//app.use(setHeaders);
 
 app.use("/", routes);
 const port = process.env.PORT || 3000;

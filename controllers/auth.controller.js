@@ -1,10 +1,13 @@
 const User = require("../models").User;
 const UserRole = require("../models").UserRole;
+const OtpHistory = require("../models").OtpHistory;
 const Role = require("../models").Role;
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("../config/app");
 const generateOtp = require('../utils/otpGenerator');
+const { Sequelize, QueryTypes,Op  } = require('sequelize');
+const otphistory = require("../models/otphistory");
 //Login Controller
 exports.login = async (req, res) => {
   try {
@@ -115,7 +118,9 @@ exports.getOtp = async (req, res) => {
   const { email } = req.body;
 
   try {
+   
     const user = await User.findOne({ where: { email } });
+
 
     if (!user) {
       return res.status(401).json({
@@ -123,15 +128,30 @@ exports.getOtp = async (req, res) => {
         message: "Invalid credentials",
       });
     }
-    
+    const oneHourAgo = new Date(new Date() - 60 * 60 * 1000);
+      const count = await OtpHistory.count({
+        where: {
+          createdAt: {
+            [Op.gt]: oneHourAgo,
+          },
+        },
+      });
+      if(count>5){
+        return res.status(400).json({
+          status: "Error",
+          message: "Error: More than 5 requests in the last hour.",
+        })
+      }
     const otp = generateOtp();
     const otpExpireTime = new Date(Date.now() + 5 * 60 * 1000); 
-
+    const userId = user.id;
+    const otpValue = otp;
   
     user.otpCode = otp;
     user.otpExpireTime = otpExpireTime;
-    await user.save(); 
 
+    await user.save(); 
+    const otpCode = await OtpHistory.create({ userId: userId, otp: otpValue,type : "otp" });
     return res.status(200).json({ message: 'OTP generated successfully', otp });
   } catch (error) {
     console.error('Error generating OTP:', error);
@@ -147,6 +167,7 @@ exports.loginWithOtp = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+
     }
 
     
@@ -181,11 +202,12 @@ exports.refreshOtp = async(req, res) => {
   const { email } = req.body;
   try {
     const user = await User.findOne({ where: { email } });
+   
     if (!user) {
       return res.status(401).json({
         status: "Error",
         message: "Invalid credentials",
-      });
+      }); 
     }
   
     if (user.otpExpireTime && user.otpExpireTime > new Date() -2 * 60 * 1000) {
@@ -194,10 +216,30 @@ exports.refreshOtp = async(req, res) => {
         status: "Error",
         message: `OTP is still valid. Please try again in ${remainingTime} seconds.`,
       })}
+    
+      const oneHourAgo = new Date(new Date() - 60 * 60 * 1000);
+      const count = await OtpHistory.count({
+        where: {
+          createdAt: {
+            [Op.gt]: oneHourAgo,
+          },
+        },
+      });
+      if(count>5){
+        return res.status(400).json({
+          status: "Error",
+          message: "Error: More than 5 requests in the last hour.",
+        })
+      }
+
+      const otp = generateOtp();
+      const otpExpireTime = new Date(Date.now() + 5 * 60 * 1000); 
       user.otpCode = otp;
       user.otpExpireTime = otpExpireTime;
+      const id=user.id;
       await user.save(); 
-  
+    
+      const otpCode = await OtpHistory.create({ userId: id, otp: otp,type : "otp" });
       return res.status(200).json({ message: 'OTP generated successfully', otp });
   }catch (error) {
     console.error('Error generating OTP:', error);

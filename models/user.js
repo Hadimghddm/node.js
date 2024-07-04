@@ -12,7 +12,9 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       this.belongsToMany(models.Role , {through:'UserRole' , foreignKey:'userId'})
+      this.hasMany(models.OtpHistory, { foreignKey: 'id' });
       this.hasMany(models.UserRole , {foreignKey:'userId'})
+
     }
   }
   User.init({
@@ -34,6 +36,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     paranoid:true,
     modelName: 'User',
+
     hooks: {
       beforeCreate: hashPassword,
       beforeUpdate: hashPassword,

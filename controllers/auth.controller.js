@@ -8,6 +8,7 @@ const config = require("../config/app");
 const generateOtp = require('../utils/otpGenerator');
 const { Sequelize, QueryTypes,Op  } = require('sequelize');
 const otphistory = require("../models/otphistory");
+const { SendEmail } = require("../utils/sendEmail");
 //Login Controller
 exports.login = async (req, res) => {
   try {
@@ -113,46 +114,61 @@ exports.refreshToken = async (req, res) => {
   }
 };
 
-
-exports.getOtp = async (req, res) => {
+exports.generateOtp = async (req, res) => {
   const { email } = req.body;
 
   try {
-   
+    console.log(`Finding user with email: ${email}`);
     const user = await User.findOne({ where: { email } });
 
-
     if (!user) {
+      console.log('User not found');
       return res.status(401).json({
         status: "Error",
         message: "Invalid credentials",
       });
     }
+
     const oneHourAgo = new Date(new Date() - 60 * 60 * 1000);
-      const count = await OtpHistory.count({
-        where: {
-          createdAt: {
-            [Op.gt]: oneHourAgo,
-          },
+    console.log(`Counting OTP requests in the last hour for user ${user.id}`);
+    const count = await OtpHistory.count({
+      where: {
+        createdAt: {
+          [Op.gt]: oneHourAgo,
         },
+      },
+    });
+
+    if (count > 5) {
+      console.log('More than 5 OTP requests in the last hour');
+      return res.status(400).json({
+        status: "Error",
+        message: "Error: More than 5 requests in the last hour.",
       });
-      if(count>5){
-        return res.status(400).json({
-          status: "Error",
-          message: "Error: More than 5 requests in the last hour.",
-        })
-      }
+    }
+
     const otp = generateOtp();
-    const otpExpireTime = new Date(Date.now() + 5 * 60 * 1000); 
+    const otpExpireTime = new Date(Date.now() + 5 * 60 * 1000);
     const userId = user.id;
-    const otpValue = otp;
-  
+
+    console.log(`Setting OTP for user ${userId}`);
     user.otpCode = otp;
     user.otpExpireTime = otpExpireTime;
 
-    await user.save(); 
-    const otpCode = await OtpHistory.create({ userId: userId, otp: otpValue,type : "otp" });
-    return res.status(200).json({ message: 'OTP generated successfully', otp });
+    await user.save();
+    console.log(`Saved OTP for user ${userId}`);
+
+    await OtpHistory.create({ userId: userId, otp: otp, type: "otp" });
+    console.log(`Inserted OTP history for user ${userId}`);
+
+    const emailStatus = await SendEmail(otp, "OTP Code", email);
+    console.log(`Email status for user ${userId}: ${emailStatus}`);
+
+    if (emailStatus) {
+      return res.status(200).json({ message: 'OTP generated successfully' });
+    } else {
+      throw new Error('Failed to send email');
+    }
   } catch (error) {
     console.error('Error generating OTP:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -200,7 +216,9 @@ exports.loginWithOtp = async (req, res) => {
 };
 exports.refreshOtp = async(req, res) => {
   const { email } = req.body;
+  
   try {
+
     const user = await User.findOne({ where: { email } });
    
     if (!user) {
@@ -225,7 +243,7 @@ exports.refreshOtp = async(req, res) => {
           },
         },
       });
-      if(count>5){
+      if(count>100 ){
         return res.status(400).json({
           status: "Error",
           message: "Error: More than 5 requests in the last hour.",
@@ -240,9 +258,61 @@ exports.refreshOtp = async(req, res) => {
       await user.save(); 
     
       const otpCode = await OtpHistory.create({ userId: id, otp: otp,type : "otp" });
-      return res.status(200).json({ message: 'OTP generated successfully', otp });
+      const emailStatus = await SendEmail(otp, "OTP Code", email);
+      console.log(`Email status for user ${userId}: ${emailStatus}`);
+
+      if (emailStatus) {
+        return res.status(200).json({ message: 'OTP generated successfully' });
+      } else {
+        throw new Error('Failed to send email');
+      }
   }catch (error) {
     console.error('Error generating OTP:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
+exports.getOtp = async (req, res) => {
+  const { email } = req.body;
+  
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.otpExpireTime < new Date()) {
+      return res.status(400).json({ message: 'OTP has expired' });
+    }
+
+    const otpCode = user.otpCode; // Corrected retrieval of OTP code from the user object
+
+    return res.status(200).json({
+      otpCode
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "Error",
+      message: err.message,
+    });
+  }
+};
+exports.findOneUser = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    } else {
+      return res.status(200).json({ message: 'Valid user' });
+    }
+
+  } catch (err) {
+    return res.status(500).json({
+      status: "Error",
+      message: err.message,
+    });
+  }
+};

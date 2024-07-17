@@ -4,8 +4,10 @@ const {
   refreshToken,
   register,
   getOtp,
+  generateOtp,
   loginWithOtp,
-  refreshOtp
+  refreshOtp,
+  findOneUser
 } = require("../controllers/auth.controller");
 const { auth, isAdmin } = require("../middlewares/auth");
 
@@ -61,11 +63,14 @@ const { rules: registerRules } = require('../validators/auth/register')
  */
 
 router.post("/login",[loginRules() , validate], login);
-router.post('/get-otp', getOtp);
+router.post('/generate-otp', generateOtp);
+router.get('/get-otp', getOtp);
 router.post('/login-otp', loginWithOtp);
 router.post('/refresh-otp', refreshOtp);
 router.post("/register", [registerRules() , validate], register);
 router.get("/refreshToken", [auth], refreshToken);
+router.post("/findOneUser",  findOneUser);
+
 
 
 module.exports = router;

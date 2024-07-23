@@ -16,9 +16,10 @@ exports.auth = (req, res, next) => {
       return res.status(401).json({ error: err });
     }
     req.user = user;
+    next(); // Move next() call inside jwt.verify
   });
-  next();
 };
+
 
 exports.isAdmin = async (req, res, next) => {
   await User.findByPk(req.user.id).then((user) => {

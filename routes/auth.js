@@ -74,12 +74,8 @@ router.post('/login-otp', loginWithOtp);
 router.post('/refresh-otp', refreshOtp);
 router.post("/register", [registerRules() , validate], register);
 router.get("/refreshToken", [auth], refreshToken);
-router.post("/findOneUser",  findOneUser);
-router.get("/findAllUsers",  findAllUsers);
 router.get('/checkToken',[auth],checkToken);
-router.delete('/delete/:id',deleteUser);
-router.put('/update/:id',updateUser);
-router.get('/filter',filtterUsers)
+
 
 
 

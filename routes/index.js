@@ -18,6 +18,7 @@ const swaggerSpec = swaggerJsdoc(options);
 
 const authRouter = require('./auth');
 const roleRouter = require('./role');
+const userRouter = require('./user')
 
 // Define routes
 router.use('/api-docs', swaggerUi.serve);
@@ -25,5 +26,7 @@ router.get('/api-docs', swaggerUi.setup(swaggerSpec));
 
 router.use('/api/v1.0/auth', authRouter);
 router.use('/api/v1.0/role', roleRouter);
+router.use('/api/v1.0/user', userRouter);
+
 
 module.exports = router;

@@ -114,6 +114,7 @@ exports.refreshToken = async (req, res) => {
     });
   }
 };
+//Generate Otp Controller
 
 exports.generateOtp = async (req, res) => {
   const { email } = req.body;
@@ -175,6 +176,8 @@ exports.generateOtp = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+//Login With Otp Controller
+
 exports.loginWithOtp = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -211,6 +214,8 @@ exports.loginWithOtp = async (req, res) => {
     });
   }
 };
+//Refresh Otp Controller
+
 exports.refreshOtp = async (req, res) => {
   const { email } = req.body;
 
@@ -274,6 +279,8 @@ exports.refreshOtp = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+//Get Otp Controller
+
 exports.getOtp = async (req, res) => {
   const { email } = req.body;
 
@@ -288,7 +295,7 @@ exports.getOtp = async (req, res) => {
       return res.status(400).json({ message: "OTP has expired" });
     }
 
-    const otpCode = user.otpCode; // Corrected retrieval of OTP code from the user object
+    const otpCode = user.otpCode;
 
     return res.status(200).json({
       otpCode,
@@ -300,58 +307,7 @@ exports.getOtp = async (req, res) => {
     });
   }
 };
-exports.findOneUser = async (req, res) => {
-  const { email } = req.body;
-
-  try {
-    const user = await User.findOne({ where: { email } });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    } else {
-      return res.status(200).json({ message: "Valid user" });
-    }
-  } catch (err) {
-    return res.status(500).json({
-      status: "Error",
-      message: err.message,
-    });
-  }
-};
-
-exports.findAllUsers = async (req, res) => {
-  try {
-    // Extract pagination parameters from query string
-    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-    const pageSize = parseInt(req.query.pageSize) || 5; // Default to 10 records per page if not provided
-
-    const offset = (page - 1) * pageSize;
-    const limit = pageSize;
-
-    // Fetch paginated users
-    const { count, rows: userList } = await User.findAndCountAll({
-      offset,
-      limit
-    });
-
-    res.status(200).send({
-      status: "Success",
-      message: "Found all users successfully!",
-      data: userList,
-      meta: {
-        totalItems: count,
-        totalPages: Math.ceil(count / pageSize),
-        currentPage: page
-      }
-    });
-  } catch (err) {
-    return res.status(500).send({
-      status: "Error",
-      message: err.message,
-    });
-  }
-};
-
+//Check Token Controller
 exports.checkToken = async (req, res) => {
   try {
     if (!req.headers.authorization) {
@@ -379,117 +335,3 @@ exports.checkToken = async (req, res) => {
   }
 };
 
-
-exports.deleteUser = async (req, res) => {
-  try {
-    const userId = req.params.id;
-    if (!userId || isNaN(userId)) {
-      return res.status(400).send({
-        status: "Error",
-        message: "Invalid or missing user ID",
-      });
-    }
-
-    // Log the received userId for debugging purposes
-    console.log("Received user ID for deletion:", userId);
-
-    // Find the user by ID
-    const user = await User.findOne({
-      attributes: ["firstName", "lastName"],
-      where: {
-        id: userId,
-      },
-    });
-
-    // Check if the user exists
-    if (!user) {
-      return res.status(404).send({
-        status: "Error",
-        message: "User not found",
-      });
-    }
-
-    // Log the user details for debugging purposes
-    console.log("User details:", user);
-
-    // Delete the user by ID
-    const data = await User.destroy({
-      where: {
-        id: userId,
-      },
-    });
-
-    return res.status(200).send({
-      status: "Success",
-      message: "User deleted successfully",
-      data: data,
-    });
-  } catch (err) {
-    console.error("Error in deleteUser:", err);
-    return res.status(500).send({
-      status: "Error",
-      message: err.message,
-    });
-  }
-};
-exports.updateUser = async (req, res) => {
-  try {
-    const data = await User.update(req.body, {
-      where: {
-        id: req.params.id,
-      },
-    });
-    res.status(200).send({
-      status: "Success",
-      message:"User updated",
-      data: data,
-    });
-  } catch (err) {
-    return res.status(500).send({
-      status: "Error",
-      message: err.message,
-    });
-  }
-};
-
-
-exports.filtterUsers = async (req, res) => {
-  try {
-
-
-  const filterData = req.body.Date;
-  if(filterData){
-    const userList = await User.findAll({
-      where: {
-        [Op.or]: [{ firstName: filterData }, { lastName: filterData },{email: filterData}],
-      },
-    });
-    console.log("::::::::::::::::::::::::::::::::::::",userList)
-   if(userList.length>0){
-    res.status(200).send({
-      status: "Success",
-      message: "Found filter users successfully!",
-      data: userList,
-     
-    });
-   }else{
-    res.status(400).send({
-      status:"Error",
-      message:"not finde user !",
-    })
-   }
-  }else{
-    res.status(404).send({
-      status:"Error!",
-      message: "incorrect data!"
-    })
-  }
-
- 
-  } catch (err) {
-    return res.status(500).send({
-      status: "Error",
-      message: err.message,
-    });
-  }
-};

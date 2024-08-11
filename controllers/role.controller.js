@@ -51,11 +51,22 @@ exports.get = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
+    const role = await Role.findByPk(req.params.id);
+    if (role.title === "Admin") {
+      console.log("::::::::::::::::::::::::::::",role)
+      return res.status(403).send({
+        status: "Error",
+        message: "Cannot update the 'admin' role",
+      });
+    }
+    console.log(":::::::::::::::::::::::tgfcxzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz:::::")
+
     const data = await Role.update(req.body, {
       where: {
         id: req.params.id,
       },
     });
+  
     res.status(200).send({
       status: "Success",
       message:"Data updated",
@@ -71,6 +82,13 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
+    const role = await Role.findByPk(req.params.id);
+    if (role.title && role.title.toLowerCase() === "admin") {
+      return res.status(403).send({
+        status: "Error",
+        message: "Cannot delete the 'admin' role",
+      });
+    }
     const data = await Role.destroy({
       where: {
         id: req.params.id,

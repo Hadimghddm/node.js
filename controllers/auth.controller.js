@@ -1,6 +1,7 @@
 const User = require("../models").User;
 const UserRole = require("../models").UserRole;
 const OtpHistory = require("../models").OtpHistory;
+const UserLoginHistory = require("../models").UserLoginHistory;
 const Role = require("../models").Role;
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -25,6 +26,13 @@ exports.login = async (req, res) => {
         message: "Invalid credentials",
       });
     }
+
+ const userLogeDetaile=   await UserLoginHistory.create({
+      userId: user.id,
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"],
+    });
+
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
       return res.status(401).send({
@@ -32,9 +40,11 @@ exports.login = async (req, res) => {
         message: "Invalid credentials",
       });
     }
+
     const token = jwt.sign({ id: user.id }, config.appKey, {
       expiresIn: "1h",
     });
+
     return res.status(200).send({
       status: "Success",
       message: "Login successfully!",
@@ -334,4 +344,3 @@ exports.checkToken = async (req, res) => {
     });
   }
 };
-

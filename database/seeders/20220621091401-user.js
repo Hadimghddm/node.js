@@ -11,12 +11,12 @@ module.exports = {
         dateOfBirth: "1997/01/01",
         password: await bcrypt.hash("123456", 10),
         phone: "09121234567",
-        email: "admin@gmail.com",
+        email: "mogaddamhadi.3457745@gmail.com",
         isVerified: 1,
         verificationCode: "123456",
-        verificationCodeExpireTime: "2022-01-01",
+        verificationCodeExpireTime: "2025-01-01",
         gender:'male',
-        nationalCode:"4271107687"
+        nationalCode:"4271162396"
 
       }
     ]);

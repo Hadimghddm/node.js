@@ -6,10 +6,10 @@ module.exports = {
       {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Users', // Ensure this matches the name of your User model
+          model: 'Users', 
           key: 'id',
         },
-        allowNull: true, // or false if you want to make it mandatory
+        allowNull: true, 
       }
     );
   },

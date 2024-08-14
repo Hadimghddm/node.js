@@ -16,8 +16,7 @@ exports.createFile = async (req, res) => {
     req.pipe(req.busboy);
 
     req.busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
-      // Ensure name is just the filename string
-      const name = filename; // Use filename directly
+      const name = filename; 
       const filePath = path.join(UPLOAD_DIR, `${Date.now()}-${filename}`);
       const fileData = [];
 
@@ -31,17 +30,16 @@ exports.createFile = async (req, res) => {
         
         console.log("info", {
           name: name,
-          type: mimetype, // Use mimetype directly
+          type: mimetype, 
           path: fullPath,
           userId: userId,
         });
 
-        // Save file info to the database
         try {
           const newFile = await File.create({
-            name: name.toString(), // Ensure this is a string
-            type: mimetype ? mimetype.toString() : '', // Ensure this is a string
-            path: fullPath.toString(), // Ensure this is a string
+            name: name.toString(), 
+            type: mimetype ? mimetype.toString() : '', 
+            path: fullPath.toString(), 
             userId: userId,
           });
 
@@ -58,7 +56,6 @@ exports.createFile = async (req, res) => {
     });
 
     req.busboy.on("finish", () => {
-      // This will run when all files are processed
     });
   } catch (error) {
     console.error("File handling error:", error);

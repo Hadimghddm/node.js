@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
           model: "Users",
           key: "id",
         },
-        allowNull: true, // Adjust based on your requirements
+        allowNull: true, 
       },
     },
     {

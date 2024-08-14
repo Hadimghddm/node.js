@@ -8,6 +8,8 @@ const cors = require("cors");
 const config = require("./config/app");
 const routes = require("./routes");
 const limiter = require('express-rate-limit')
+const busboy = require('connect-busboy');
+
 //const { setHeaders } = require("./middlewares/headers");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -17,6 +19,7 @@ app.use(express.static(path.join(__dirname, "uploads")));
 app.use(express.static("public"));
 app.use(morgan("dev"));
 require("./swagger-setup")(app);
+app.use(busboy());
 
 app.use(
   limiter({

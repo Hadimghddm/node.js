@@ -28,5 +28,4 @@ router.get("/logHistory/:id",getUserLoginHistory );
 
 
 
-
 module.exports = router;

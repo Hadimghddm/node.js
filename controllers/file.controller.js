@@ -16,8 +16,13 @@ exports.createFile = async (req, res) => {
     req.pipe(req.busboy);
 
     req.busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
-      const name = filename; 
-      const filePath = path.join(UPLOAD_DIR, `${Date.now()}-${filename}`);
+      console.log("Original filename object:", filename);
+      
+      // Extract the actual filename if it's nested in an object
+      const actualFilename = filename && filename.filename ? filename.filename : 'unknown-file';
+      console.log("Extracted filename:", actualFilename);
+
+      const filePath = path.join(UPLOAD_DIR, `${Date.now()}-${actualFilename}`);
       const fileData = [];
 
       file.on("data", (data) => {
@@ -25,21 +30,21 @@ exports.createFile = async (req, res) => {
       });
 
       file.on("end", async () => {
-        const fullPath = path.join(UPLOAD_DIR, `${Date.now()}-${filename}`);
+        const fullPath = path.join(UPLOAD_DIR, `${Date.now()}-${actualFilename}`);
         fs.writeFileSync(fullPath, Buffer.concat(fileData));
         
         console.log("info", {
-          name: name,
-          type: mimetype, 
+          name: actualFilename,
+          type: mimetype ? mimetype.toString() : '', 
           path: fullPath,
           userId: userId,
         });
 
         try {
           const newFile = await File.create({
-            name: name.toString(), 
+            name: actualFilename, 
             type: mimetype ? mimetype.toString() : '', 
-            path: fullPath.toString(), 
+            path: fullPath, 
             userId: userId,
           });
 
@@ -56,12 +61,15 @@ exports.createFile = async (req, res) => {
     });
 
     req.busboy.on("finish", () => {
+      // Finish event logic if needed
     });
   } catch (error) {
     console.error("File handling error:", error);
     res.status(500).json({ error: "Failed to create file" });
   }
 };
+
+
 
 
 exports.getAll = async (req, res) => {

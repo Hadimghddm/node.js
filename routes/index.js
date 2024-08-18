@@ -20,6 +20,8 @@ const authRouter = require('./auth');
 const roleRouter = require('./role');
 const userRouter = require('./user');
 const fileRouter = require ('./file');
+const categoryRouter = require ('./category');
+
 
 // Define routes
 router.use('/api-docs', swaggerUi.serve);
@@ -28,7 +30,7 @@ router.get('/api-docs', swaggerUi.setup(swaggerSpec));
 router.use('/api/v1.0/auth', authRouter);
 router.use('/api/v1.0/role', roleRouter);
 router.use('/api/v1.0/user', userRouter);
-router.use('/api/v1.0/file',fileRouter);
+router.use('/api/v1.0/category',categoryRouter);
 
 
 module.exports = router;

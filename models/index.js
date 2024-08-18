@@ -22,7 +22,7 @@ fs
   })
   .forEach(file => {
     const modelPath = path.join(__dirname, file);
-    console.log(`Loading model from ${modelPath}`); // Log file being loaded
+    console.log(`Loading model from ${modelPath}`);
     const modelFunc = require(modelPath);
     if (typeof modelFunc !== 'function') {
       throw new Error(`Model file ${file} does not export a function`);
